@@ -1,13 +1,26 @@
 import sys
 import os
 
-# FIX: project root add to path
+# Fix import path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
 import cv2
 from deepface import DeepFace
-from backend.suggestion_engine import get_suggestion
+from backend.ai_suggestion_engine import get_ai_suggestion
+from backend.action_handler import handle_action
+
+# ---------- PARSE AI OUTPUT ----------
+def parse_ai_output(text):
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+
+    message = lines[0] if len(lines) > 0 else ""
+
+    suggestions = []
+    if len(lines) > 1:
+        suggestions = lines[1:3]
+
+    return message, suggestions
 
 st.set_page_config(page_title="AI Virtual Friend", layout="centered")
 
@@ -34,10 +47,9 @@ with col2:
     if st.button("⏹️ Stop"):
         st.session_state.run = False
 
-# ---------------- UI HOLDERS ----------------
+# ---------------- CAMERA ----------------
 frame_window = st.image([])
 
-# ---------------- CAMERA ----------------
 if st.session_state.run:
     cap = cv2.VideoCapture(0)
 
@@ -52,10 +64,10 @@ if st.session_state.run:
             result = DeepFace.analyze(frame, actions=['emotion'], enforce_detection=False)
             emotion = result[0]['dominant_emotion']
 
-            # update only if emotion changes
+            # update only when emotion changes
             if emotion != st.session_state.emotion:
                 st.session_state.emotion = emotion
-                st.session_state.data = get_suggestion(emotion)
+                st.session_state.data = get_ai_suggestion(emotion)
 
         except:
             pass
@@ -65,15 +77,20 @@ if st.session_state.run:
 
     cap.release()
 
-# ---------------- SHOW UI (OUTSIDE LOOP) ----------------
+# ---------------- DISPLAY AI OUTPUT ----------------
 if st.session_state.data:
-    d = st.session_state.data
+    ai_text = st.session_state.data
+
+    message, suggestions = parse_ai_output(ai_text)
 
     st.markdown(f"### Emotion: **{st.session_state.emotion}**")
-    st.write(d["message"])
+    st.write(message)
 
-    cols = st.columns(len(d["suggestions"]))
-
-    for i, s in enumerate(d["suggestions"]):
-        if cols[i].button(s, key=f"btn_{i}"):
-            st.success(f"You selected: {s}")
+    # अभी suggestions print करेंगे (buttons बाद में)
+    if suggestions:
+        cols = st.columns(len(suggestions))
+    
+    for i, s in enumerate(suggestions):
+        if cols[i].button(s, key=f"ai_btn_{i}"):
+            st.success(f"Opening: {s}")
+            handle_action(s)
