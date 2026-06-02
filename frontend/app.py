@@ -10,6 +10,8 @@ from deepface import DeepFace
 from backend.ai_suggestion_engine import get_ai_suggestion
 from backend.youtube_service import get_youtube_video
 from backend.action_handler import handle_action
+from utils.voice_input import listen_to_user
+from backend.chat_engine import chat_with_ai
 
 # ---------- PARSE AI OUTPUT ----------
 def parse_ai_output(text):
@@ -48,6 +50,12 @@ if "emotion" not in st.session_state:
 if "data" not in st.session_state:
     st.session_state.data = None
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
+if "conversation" not in st.session_state:
+    st.session_state.conversation = []
+
 # ---------------- BUTTONS ----------------
 col1, col2 = st.columns(2)
 
@@ -59,7 +67,58 @@ with col2:
     if st.button("⏹️ Stop"):
         st.session_state.run = False
 
+# ---------------- VOICE INPUT ----------------
+st.write("---")
+
+if st.button("🎤 Speak"):
+
+    with st.spinner("Listening..."):
+
+        voice_text = listen_to_user()
+
+    st.success(f"You said: {voice_text}")
+
+    # AI response
+    with st.spinner("AI is thinking..."):
+
+        ai_reply = get_ai_suggestion(voice_text)
+
+    st.markdown("### 🤖 AI Reply")
+    st.write(ai_reply)
+
+# -----------------CHAT SECTION-----------------------------
+
+st.write("---")
+st.subheader("💬 Chat with AI")
+
+user_message = st.text_input("Type your message")
+
+if st.button("Send") and user_message:
+
+    with st.spinner("AI is thinking..."):
+        ai_reply = chat_with_ai(user_message)
+
+    st.session_state.chat_history.append(
+        ("You", user_message)
+    )
+
+    st.session_state.chat_history.append(
+        ("AI", ai_reply)
+    )
+
+st.write("---")
+st.subheader("📜 Chat History")
+
+for sender, message in st.session_state.chat_history:
+
+    if sender == "You":
+        st.markdown(f"**🧑 You:** {message}")
+
+    else:
+        st.markdown(f"**🤖 AI:** {message}")
+
 # ---------------- CAMERA ----------------
+
 frame_window = st.image([])
 
 if st.session_state.run:
