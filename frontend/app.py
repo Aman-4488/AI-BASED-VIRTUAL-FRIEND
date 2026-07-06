@@ -7,6 +7,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import streamlit as st
 import cv2
 from deepface import DeepFace
+from database.db_manager import save_chat
+from database.db_manager import initialize_db
 from backend.ai_suggestion_engine import get_ai_suggestion
 from backend.youtube_service import get_youtube_video
 from backend.action_handler import handle_action
@@ -25,6 +27,8 @@ def parse_ai_output(text):
 
     return message, suggestions
 
+
+initialize_db()
 st.set_page_config(page_title="AI Virtual Friend", layout="centered")
 
 st.markdown(
@@ -55,6 +59,9 @@ if "chat_history" not in st.session_state:
 
 if "conversation" not in st.session_state:
     st.session_state.conversation = []
+
+if "mood_history" not in st.session_state:
+    st.session_state.mood_history = []
 
 # ---------------- BUTTONS ----------------
 col1, col2 = st.columns(2)
@@ -88,6 +95,8 @@ if st.button("🎤 Speak"):
 
 # -----------------CHAT SECTION-----------------------------
 
+# -----------------CHAT SECTION-----------------------------
+
 st.write("---")
 st.subheader("💬 Chat with AI")
 
@@ -95,9 +104,29 @@ user_message = st.text_input("Type your message")
 
 if st.button("Send") and user_message:
 
-    with st.spinner("AI is thinking..."):
-        ai_reply = chat_with_ai(user_message)
+    # Save user message in memory
+    st.session_state.conversation.append(
+        {
+            "role": "user",
+            "content": user_message
+        }
+    )
 
+    with st.spinner("AI is thinking..."):
+
+        ai_reply = chat_with_ai(
+            st.session_state.conversation
+        )
+
+    # Save AI reply in memory
+    st.session_state.conversation.append(
+        {
+            "role": "assistant",
+            "content": ai_reply
+        }
+    )
+
+    # Show chat history
     st.session_state.chat_history.append(
         ("You", user_message)
     )
@@ -106,16 +135,48 @@ if st.button("Send") and user_message:
         ("AI", ai_reply)
     )
 
+    # Save chat to database
+    save_chat("user", user_message)
+    save_chat("assistant", ai_reply)
+
+# Show only the latest conversation
+
 st.write("---")
-st.subheader("📜 Chat History")
 
 for sender, message in st.session_state.chat_history:
 
     if sender == "You":
-        st.markdown(f"**🧑 You:** {message}")
+        with st.chat_message("user"):
+            st.write(message)
 
     else:
-        st.markdown(f"**🤖 AI:** {message}")
+        with st.chat_message("assistant"):
+            st.write(message)
+
+            
+st.subheader("📊 Mood Analytics")
+
+if st.session_state.mood_history:
+
+    mood_counts = {}
+
+    for mood in st.session_state.mood_history:
+
+        if mood not in mood_counts:
+            mood_counts[mood] = 0
+
+        mood_counts[mood] += 1
+
+    st.write(mood_counts)
+
+    most_common = max(
+        mood_counts,
+        key=mood_counts.get
+    )
+
+    st.success(
+        f"Most Frequent Mood: {most_common}"
+    )
 
 # ---------------- CAMERA ----------------
 
@@ -137,10 +198,16 @@ if st.session_state.run:
 
             # update only when emotion changes
             if emotion != st.session_state.emotion:
-                st.session_state.emotion = emotion
-                with st.spinner("Thinking..."):
-                  st.session_state.data = get_ai_suggestion(emotion)
 
+                st.session_state.emotion = emotion
+
+                # Save mood history
+                st.session_state.mood_history.append(emotion)
+
+                with st.spinner("Thinking..."):
+                 st.session_state.data = get_ai_suggestion(emotion)
+
+                print("AI DATA =", st.session_state.data)
         except:
             pass
 
@@ -185,7 +252,4 @@ if st.session_state.data:
                st.write("---")
                st.video(video_url)
              else:
-                 st.error("Video not found")
-                
-
-   
+                 st.error("Video not found") 
