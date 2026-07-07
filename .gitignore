@@ -1,5 +1,22 @@
-vansh_env/
+# Python
 __pycache__/
 *.pyc
+
+# Virtual Environment
+vansh_env/
+
+# Environment Variables
 .env
+
+# Database
+*.db
+
+# VS Code
+.vscode/
+
+# ML Models
 models/
+
+# OS Files
+.DS_Store
+Thumbs.db
