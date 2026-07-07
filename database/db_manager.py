@@ -47,3 +47,23 @@ def save_chat(role, message):
 
     conn.commit()
     conn.close()
+
+
+
+def save_mood(emotion):
+
+    print("SAVE_MOOD CALLED:", emotion)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO mood_history(emotion)
+        VALUES (?)
+        """,
+        (emotion,)
+    )
+
+    conn.commit()
+    conn.close()

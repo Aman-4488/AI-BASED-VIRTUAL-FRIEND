@@ -14,6 +14,7 @@ from backend.youtube_service import get_youtube_video
 from backend.action_handler import handle_action
 from utils.voice_input import listen_to_user
 from backend.chat_engine import chat_with_ai
+from database.db_manager import initialize_db, save_chat, save_mood
 
 # ---------- PARSE AI OUTPUT ----------
 def parse_ai_output(text):
@@ -203,13 +204,16 @@ if st.session_state.run:
 
                 # Save mood history
                 st.session_state.mood_history.append(emotion)
+                save_mood(emotion)
+                print("Mood saved successfully")
 
                 with st.spinner("Thinking..."):
                  st.session_state.data = get_ai_suggestion(emotion)
 
                 print("AI DATA =", st.session_state.data)
-        except:
-            pass
+        except Exception as e:
+           print("ERROR:", e)
+            
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_window.image(frame)
