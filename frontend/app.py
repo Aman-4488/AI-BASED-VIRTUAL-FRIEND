@@ -15,6 +15,7 @@ from backend.action_handler import handle_action
 from utils.voice_input import listen_to_user
 from backend.chat_engine import chat_with_ai
 from database.db_manager import initialize_db, save_chat, save_mood
+from frontend.components.header import render_header
 
 # ---------- PARSE AI OUTPUT ----------
 def parse_ai_output(text):
@@ -32,18 +33,7 @@ def parse_ai_output(text):
 initialize_db()
 st.set_page_config(page_title="AI Virtual Friend", layout="centered")
 
-st.markdown(
-    """
-    <h1 style='text-align: center; color: #4CAF50;'>
-        🤖 AI Virtual Friend
-    </h1>
-    <p style='text-align: center;'>
-        Your smart mood-based AI companion
-    </p>
-    <hr>
-    """,
-    unsafe_allow_html=True
-)
+render_header()
 
 # ---------------- SESSION STATE ----------------
 if "run" not in st.session_state:

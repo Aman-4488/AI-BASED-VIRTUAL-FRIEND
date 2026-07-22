@@ -1,0 +1,47 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+    padding: 25px 80px;
+}
+
+.logo h1 {
+    font-size: 32px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: black;
+    font-size: 18px;
+}
+
+.nav-links a:hover {
+    color: #2E8B57;
+}
+
+.login-btn{
+    padding:10px 20px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#2E8B57;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-size:16px;
+}
+
+.login-btn:hover {
+    background: #256f47;
+}
