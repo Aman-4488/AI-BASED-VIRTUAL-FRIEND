@@ -5,17 +5,17 @@ function Header() {
     <header className="header">
 
       <div className="logo">
-        <h1>Eunoia</h1>
+        Eunoia
       </div>
 
       <nav className="nav-links">
-        <a href="#">Dashboard</a>
-        <a href="#">Chat</a>
-        <a href="#">Settings</a>
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">About</a>
       </nav>
 
       <button className="login-btn">
-    Login
+        Login
       </button>
 
     </header>
