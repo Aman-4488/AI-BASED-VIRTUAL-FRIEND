@@ -1,13 +1,15 @@
-import './App.css'
-import Header  from './components/Header';
+import "./App.css";
+
+import Header from "./components/Header";
+import DashboardLayout from "./components/DashboardLayout";
 
 function App() {
-
   return (
-    <div className="container">
-       <Header/>
-    </div>
+    <>
+      <Header />
+      <DashboardLayout />
+    </>
   );
 }
 
-export default App
+export default App;
